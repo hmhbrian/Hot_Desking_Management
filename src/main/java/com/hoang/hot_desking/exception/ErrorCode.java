@@ -29,6 +29,7 @@ public enum ErrorCode {
     SEAT_NOT_FOUND(3008, "Chỗ ngồi không tồn tại", HttpStatus.NOT_FOUND),
     SEAT_ALREADY_LOCKED(3009, "Chỗ ngồi đang được người khác chọn (đang giữ chỗ)", HttpStatus.CONFLICT),
     SEAT_MAINTENANCE(3010, "Chỗ ngồi đang bảo trì, không thể đặt", HttpStatus.BAD_REQUEST),
+    INVALID_SEAT_QUANTITY(3011, "Số lượng ghế tạo mới phải lớn hơn 0", HttpStatus.BAD_REQUEST),
     // Booking Business Rules
     BOOKING_NOT_FOUND(4001, "Thông tin đặt chỗ không tồn tại", HttpStatus.NOT_FOUND),
     BOOKING_OVERLAP(4002, "Chỗ ngồi đã bị đặt trong khung giờ này", HttpStatus.CONFLICT),
