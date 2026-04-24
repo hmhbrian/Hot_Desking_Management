@@ -6,6 +6,7 @@ import com.hoang.hot_desking.service.ZoneService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class ZoneController {
     private final ZoneService zoneService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ApiResponse<ZoneResponse> create(@RequestBody @Valid ZoneRequest request) {
         return ApiResponse.<ZoneResponse>builder()
                 .status(1000)
@@ -26,6 +28,7 @@ public class ZoneController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<List<ZoneResponse>> getAll() {
         return ApiResponse.<List<ZoneResponse>>builder()
                 .status(1000)
@@ -42,6 +45,7 @@ public class ZoneController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ApiResponse<ZoneResponse> update(@PathVariable Long id, @RequestBody ZoneRequest request) {
         return ApiResponse.<ZoneResponse>builder()
                 .status(1000)
@@ -50,6 +54,7 @@ public class ZoneController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<String> delete(@PathVariable Long id) {
         zoneService.deleteZone(id);
         return ApiResponse.<String>builder()

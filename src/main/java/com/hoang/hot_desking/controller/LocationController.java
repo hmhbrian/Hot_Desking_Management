@@ -6,6 +6,7 @@ import com.hoang.hot_desking.service.LocationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class LocationController {
     private final LocationService locationService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ApiResponse<LocationResponse> create(@RequestBody @Valid LocationRequest request) {
         return ApiResponse.<LocationResponse>builder()
                 .status(1000)
@@ -42,6 +44,7 @@ public class LocationController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ApiResponse<LocationResponse> update(@PathVariable Long id, @RequestBody LocationRequest request) {
         return ApiResponse.<LocationResponse>builder()
                 .status(1000)
@@ -50,6 +53,7 @@ public class LocationController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<String> delete(@PathVariable Long id) {
         locationService.deleteLocation(id);
         return ApiResponse.<String>builder()
