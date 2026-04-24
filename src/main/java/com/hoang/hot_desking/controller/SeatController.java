@@ -7,6 +7,7 @@ import com.hoang.hot_desking.dto.seat.SeatResponse;
 import com.hoang.hot_desking.service.SeatService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class SeatController {
     private final SeatService seatService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ApiResponse<SeatResponse> create(@RequestBody @Valid SeatRequest request) {
         return ApiResponse.<SeatResponse>builder()
                 .status(1000)
@@ -27,6 +29,7 @@ public class SeatController {
     }
 
     @PostMapping("/bulk")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ApiResponse<String> createBulk(@RequestBody @Valid SeatBulkRequest request) {
         seatService.createBulkSeats(request);
         return ApiResponse.<String>builder()
@@ -44,6 +47,7 @@ public class SeatController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ApiResponse<SeatResponse> update(
             @PathVariable UUID id,
             @RequestBody @Valid SeatRequest request) {
@@ -54,6 +58,7 @@ public class SeatController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<Void> delete(@PathVariable UUID id) {
         seatService.deleteSeat(id);
         return ApiResponse.<Void>builder()

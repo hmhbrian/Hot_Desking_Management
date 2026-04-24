@@ -6,6 +6,7 @@ import com.hoang.hot_desking.service.DepartmentService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class DepartmentController {
     private final DepartmentService departmentService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ApiResponse<DepartmentResponse> create(@RequestBody @Valid DepartmentRequest request) {
         return ApiResponse.<DepartmentResponse>builder()
                 .status(1000)
@@ -42,6 +44,7 @@ public class DepartmentController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ApiResponse<DepartmentResponse> update(@PathVariable Long id, @RequestBody DepartmentRequest request) {
         return ApiResponse.<DepartmentResponse>builder()
                 .status(1000)
@@ -50,6 +53,7 @@ public class DepartmentController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<String> delete(@PathVariable Long id) {
         departmentService.deleteDepartment(id);
         return ApiResponse.<String>builder()
