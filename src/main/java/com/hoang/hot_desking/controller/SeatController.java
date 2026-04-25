@@ -5,6 +5,7 @@ import com.hoang.hot_desking.dto.seat.SeatBulkRequest;
 import com.hoang.hot_desking.dto.seat.SeatRequest;
 import com.hoang.hot_desking.dto.seat.SeatResponse;
 import com.hoang.hot_desking.service.SeatService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,6 +17,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/seats")
 @RequiredArgsConstructor
+@Tag(name = "Seats", description = "Quản lý chỗ ngồi")
 public class SeatController {
     private final SeatService seatService;
 

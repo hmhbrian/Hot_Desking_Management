@@ -33,11 +33,12 @@ public enum ErrorCode {
     // Booking Business Rules
     BOOKING_NOT_FOUND(4001, "Thông tin đặt chỗ không tồn tại", HttpStatus.NOT_FOUND),
     BOOKING_OVERLAP(4002, "Chỗ ngồi đã bị đặt trong khung giờ này", HttpStatus.CONFLICT),
-    QUOTA_EXCEEDED(4003, "Bạn đã đạt giới hạn số lượng đặt chỗ trong cùng một thời điểm", HttpStatus.BAD_REQUEST),
-    BOOKING_TIME_INVALID(4004, "Thời gian đặt chỗ không hợp lệ (Phải đặt trước tối đa 7 ngày)", HttpStatus.BAD_REQUEST),
-    CHECKIN_TIMEOUT(4005, "Đã quá thời gian cho phép check-in", HttpStatus.GONE),
-    INVALID_QR_TOKEN(4006, "Mã QR không hợp lệ hoặc đã hết hạn", HttpStatus.BAD_REQUEST),
-    ALREADY_CHECKED_IN(4007, "Bạn đã thực hiện check-in cho lượt đặt này rồi", HttpStatus.BAD_REQUEST);
+    BOOKING_LOCKED(4003,"Chỗ ngồi này đang được người khác giữ chỗ tạm thời.", HttpStatus.LOCKED),
+    QUOTA_EXCEEDED(4004, "Bạn đã đạt giới hạn số lượng đặt chỗ trong cùng một thời điểm", HttpStatus.BAD_REQUEST),
+    BOOKING_TIME_INVALID(4005, "Thời gian đặt chỗ không hợp lệ (Phải đặt trước tối đa 7 ngày)", HttpStatus.BAD_REQUEST),
+    CHECKIN_TIMEOUT(4006, "Đã quá thời gian cho phép check-in", HttpStatus.GONE),
+    INVALID_QR_TOKEN(4007, "Mã QR không hợp lệ hoặc đã hết hạn", HttpStatus.BAD_REQUEST),
+    ALREADY_CHECKED_IN(4008, "Bạn đã thực hiện check-in cho lượt đặt này rồi", HttpStatus.BAD_REQUEST);
 
     private final int code;
     private final String message;
