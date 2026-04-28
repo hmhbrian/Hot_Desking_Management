@@ -1,16 +1,17 @@
 package com.hoang.hot_desking.controller;
 
 import com.hoang.hot_desking.dto.ApiResponse;
+import com.hoang.hot_desking.dto.booking.BookingRequest;
+import com.hoang.hot_desking.dto.booking.BookingResponse;
 import com.hoang.hot_desking.entity.User;
 import com.hoang.hot_desking.service.BookingService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -35,5 +36,19 @@ public class BookingController {
         return ResponseEntity.ok(ApiResponse.<String>builder()
                 .result("Ghế đã được giữ thành công. Bạn có 5 phút để hoàn tất thông tin.")
                 .build());
+    }
+
+    //Xác nhận đặt chỗ
+    @PostMapping("/confirm")
+    public ResponseEntity<ApiResponse<BookingResponse>> confirmBooking(
+            @RequestBody @Valid BookingRequest request,
+            @AuthenticationPrincipal User currentUser) {
+
+        BookingResponse response = bookingService.confirmBooking(request, currentUser);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.<BookingResponse>builder()
+                        .result(response)
+                        .build());
     }
 }
