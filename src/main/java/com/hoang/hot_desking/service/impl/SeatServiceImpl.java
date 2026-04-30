@@ -1,5 +1,6 @@
 package com.hoang.hot_desking.service.impl;
 
+import com.hoang.hot_desking.dto.seat.SearchSeatRequest;
 import com.hoang.hot_desking.dto.seat.SeatBulkRequest;
 import com.hoang.hot_desking.dto.seat.SeatRequest;
 import com.hoang.hot_desking.dto.seat.SeatResponse;
@@ -95,5 +96,26 @@ public class SeatServiceImpl implements SeatService {
             throw new AppException(ErrorCode.SEAT_NOT_FOUND);
         }
         seatRepository.deleteById(id);
+    }
+
+    @Override
+    public List<SeatResponse> searchSeats(SearchSeatRequest request) {
+        // 1. Validation logic
+        if (request.getStartTime().isAfter(request.getEndTime())) {
+            throw new AppException(ErrorCode.INVALID_TIME_RANGE);
+        }
+
+        // 2. Gọi Repository xử lý lọc phức tạp ở tầng Database
+        List<Seat> availableSeats = seatRepository.searchAvailableSeats(
+                request.getStartTime(),
+                request.getEndTime(),
+                request.getZoneId(),
+                request.getMinMonitors(),
+                request.getSeatType()
+        );
+
+        return availableSeats.stream()
+                .map(seatMapper::toSeatResponse)
+                .toList();
     }
 }

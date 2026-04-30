@@ -9,4 +9,5 @@ public interface SeatService {
     List<SeatResponse> getAllByZone(Long zoneId);
     SeatResponse updateSeat(UUID id, SeatRequest request);
     void deleteSeat(UUID id);
+    List<SeatResponse> searchSeats(SearchSeatRequest request);
 }
