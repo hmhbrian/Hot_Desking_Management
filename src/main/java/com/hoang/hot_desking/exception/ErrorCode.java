@@ -12,6 +12,7 @@ public enum ErrorCode {
     UNAUTHENTICATED(1002, "Người dùng chưa đăng nhập hoặc Token hết hạn", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1003, "Bạn không có quyền thực hiện hành động này", HttpStatus.FORBIDDEN),
     VALIDATION_ERROR(1004, "Dữ liệu đầu vào không hợp lệ", HttpStatus.BAD_REQUEST),
+    INVALID_TIME_RANGE(1005, "Thời gian tìm kiếm không hợp lệ", HttpStatus.BAD_REQUEST),
     // User & Department
     USER_NOT_EXISTED(2001, "Người dùng không tồn tại", HttpStatus.NOT_FOUND),
     USER_EXISTED(2002, "Người dùng đã tồn tại trên hệ thống", HttpStatus.CONFLICT),
