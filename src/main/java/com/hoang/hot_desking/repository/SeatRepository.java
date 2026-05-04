@@ -40,7 +40,7 @@ public interface SeatRepository extends JpaRepository<Seat, UUID> {
     List<Seat> searchAvailableSeats(
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime,
-            @Param("zoneId") UUID zoneId,
+            @Param("zoneId") Integer zoneId,
             @Param("minMonitors") Integer minMonitors,
             @Param("seatType") String seatType
     );

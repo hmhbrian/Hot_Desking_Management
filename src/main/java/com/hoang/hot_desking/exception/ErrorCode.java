@@ -37,6 +37,7 @@ public enum ErrorCode {
     BOOKING_LOCKED(4003,"Chỗ ngồi này đang được người khác giữ chỗ tạm thời.", HttpStatus.LOCKED),
     QUOTA_EXCEEDED(4004, "Bạn đã đạt giới hạn số lượng đặt chỗ trong cùng một thời điểm", HttpStatus.BAD_REQUEST),
     BOOKING_TOO_FAR(4005, "Thời gian đặt chỗ không hợp lệ (Chỉ được đặt trước tối đa 7 ngày)", HttpStatus.BAD_REQUEST),
+    CANCEL_NOT_ALLOWED(4005,"Không được hủy do đã quá giờ bắt đầu",HttpStatus.BAD_REQUEST),
     CHECKIN_TIMEOUT(4006, "Đã quá thời gian cho phép check-in", HttpStatus.GONE),
     INVALID_QR_TOKEN(4007, "Mã QR không hợp lệ hoặc đã hết hạn", HttpStatus.BAD_REQUEST),
     ALREADY_CHECKED_IN(4008, "Bạn đã thực hiện check-in cho lượt đặt này rồi", HttpStatus.BAD_REQUEST);

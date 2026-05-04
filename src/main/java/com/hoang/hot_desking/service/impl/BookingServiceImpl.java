@@ -1,6 +1,7 @@
 package com.hoang.hot_desking.service.impl;
 
 import com.hoang.hot_desking.component.SeatLockManager;
+import com.hoang.hot_desking.dto.booking.BookingDetailResponse;
 import com.hoang.hot_desking.dto.booking.BookingRequest;
 import com.hoang.hot_desking.dto.booking.BookingResponse;
 import com.hoang.hot_desking.entity.Booking;
@@ -17,6 +18,8 @@ import com.hoang.hot_desking.service.BookingService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -81,7 +84,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         // 5. Kích hoạt Optimistic Locking bằng cách truy vấn Seat và tăng version
-        // Sử dụng phương thức findByIdWithLock đã tạo ở S2.3
+        // Sử dụng phương thức findByIdWithLock
         Seat seat = seatRepository.findByIdWithLock(seatId)
                 .orElseThrow(() -> new AppException(ErrorCode.SEAT_NOT_FOUND));
 
@@ -116,5 +119,43 @@ public class BookingServiceImpl implements BookingService {
 
 
         return bookingMapper.toBookingResponse(booking);
+    }
+
+    @Override
+    public Page<BookingResponse> getMyBookings(User currentUser, Pageable pageable) {
+        return bookingRepository.findByUserIdOrderByStartTimeDesc(currentUser.getId(), pageable)
+                .map(bookingMapper::toBookingResponse);
+    }
+
+    @Override
+    @Transactional
+    public void cancelBooking(UUID bookingId, User currentUser) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
+
+        // 1. Kiểm tra quyền sở hữu
+        if (!booking.getUser().getId().equals(currentUser.getId())) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        // 2. Kiểm tra thời gian: Không được hủy nếu đã quá giờ bắt đầu
+        if (LocalDateTime.now().isAfter(booking.getStartTime())) {
+            throw new AppException(ErrorCode.CANCEL_NOT_ALLOWED);
+        }
+
+        // 3. Cập nhật trạng thái
+        booking.setStatus(BookingStatus.CANCELLED);
+        bookingRepository.save(booking);
+
+        log.info("User {} đã hủy thành công booking {}", currentUser.getId(), bookingId);
+    }
+
+    @Override
+    public BookingDetailResponse getBookingDetail(UUID bookingId, User currentUser) {
+        // Vừa check tồn tại, vừa check chủ sở hữu
+        // JOIN FETCH để lấy luôn Seat và Zone trong 1 câu Query
+        return bookingRepository.findByIdAndUserIdWithDetails(bookingId, currentUser.getId())
+                .map(bookingMapper::toDetailResponse)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
     }
 }
