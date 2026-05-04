@@ -4,6 +4,7 @@ import com.hoang.hot_desking.component.SeatLockManager;
 import com.hoang.hot_desking.dto.booking.BookingDetailResponse;
 import com.hoang.hot_desking.dto.booking.BookingRequest;
 import com.hoang.hot_desking.dto.booking.BookingResponse;
+import com.hoang.hot_desking.dto.booking.CheckInRequest;
 import com.hoang.hot_desking.entity.Booking;
 import com.hoang.hot_desking.entity.Seat;
 import com.hoang.hot_desking.entity.User;
@@ -157,5 +158,46 @@ public class BookingServiceImpl implements BookingService {
         return bookingRepository.findByIdAndUserIdWithDetails(bookingId, currentUser.getId())
                 .map(bookingMapper::toDetailResponse)
                 .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
+    }
+
+    @Override
+    @Transactional
+    public void checkIn(CheckInRequest request, User currentUser) {
+        LocalDateTime now = LocalDateTime.now();
+
+        //Tìm booking bằng qrToken
+        Booking booking = bookingRepository.findByQrToken(request.getQrToken())
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_QR_TOKEN));
+
+        //1: Kiểm tra quyền sở hữu
+        if (!booking.getUser().getId().equals(currentUser.getId())) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        //2: Kiểm tra vị trí (Ghế quét được có đúng ghế đã đặt?)
+        if (!booking.getSeat().getId().equals(request.getSeatId())) {
+            throw new AppException(ErrorCode.WRONG_SEAT);
+        }
+
+        //3: Kiểm tra trạng thái (Chỉ cho phép khi đang là CONFIRMED)
+        if (booking.getStatus() != BookingStatus.CONFIRMED) {
+            throw new AppException(ErrorCode.INVALID_BOOKING_STATUS);
+        }
+
+        //4: Kiểm tra thời gian
+        // Cho phép check-in trước 15p và sau tối đa 30p so với giờ bắt đầu
+        if (now.isBefore(booking.getStartTime().minusMinutes(15))) {
+            throw new AppException(ErrorCode.CHECKIN_TOO_EARLY);
+        }
+        if (now.isAfter(booking.getStartTime().plusMinutes(30))) {
+            throw new AppException(ErrorCode.CHECKIN_TIMEOUT);
+        }
+
+        //Ghi nhận thành công
+        booking.setStatus(BookingStatus.CHECKED_IN);
+        booking.setCheckInAt(now);
+        bookingRepository.save(booking);
+
+        log.info("User {} đã check-in thành công tại ghế {}", currentUser.getFullName(), booking.getSeat().getSeatNumber());
     }
 }

@@ -39,4 +39,6 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     // Lấy booking kèm theo Seat và Zone (tránh lỗi N+1 khi hiển thị)
     @Query("SELECT b FROM Booking b JOIN FETCH b.seat s JOIN FETCH s.zone WHERE b.id = :id AND b.user.id = :userId")
     Optional<Booking> findByIdAndUserIdWithDetails(UUID id, UUID userId);
+
+    Optional<Booking> findByQrToken(String qrToken);
 }

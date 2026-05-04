@@ -5,6 +5,7 @@ import com.hoang.hot_desking.dto.PageResponse;
 import com.hoang.hot_desking.dto.booking.BookingDetailResponse;
 import com.hoang.hot_desking.dto.booking.BookingRequest;
 import com.hoang.hot_desking.dto.booking.BookingResponse;
+import com.hoang.hot_desking.dto.booking.CheckInRequest;
 import com.hoang.hot_desking.entity.User;
 import com.hoang.hot_desking.service.BookingService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -103,6 +104,19 @@ public class BookingController {
 
         return ApiResponse.<BookingDetailResponse>builder()
                 .result(bookingService.getBookingDetail(id, currentUser))
+                .build();
+    }
+
+    @PostMapping("/check-in")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ApiResponse<String> checkIn(
+            @RequestBody @Valid CheckInRequest request,
+            @AuthenticationPrincipal User currentUser) {
+
+        bookingService.checkIn(request, currentUser);
+
+        return ApiResponse.<String>builder()
+                .message("Check-in thành công! Chúc bạn có một ngày làm việc hiệu quả.")
                 .build();
     }
 }
