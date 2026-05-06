@@ -31,14 +31,20 @@ public class GlobalExceptionHandler {
     ResponseEntity<ApiResponse<?>> handlingValidation(MethodArgumentNotValidException exception) {
         String enumKey = exception.getFieldError().getDefaultMessage();
         ErrorCode errorCode = ErrorCode.INVALID_KEY;
+        String finalMessage = errorCode.getMessage();
+
         try {
             errorCode = ErrorCode.valueOf(enumKey);
-        } catch (IllegalArgumentException e) { /* Giữ mặc định */ }
+            finalMessage = errorCode.getMessage();
+        } catch (IllegalArgumentException e) {
+            // Nếu message không phải là một ErrorCode key, sử dụng chính message đó
+            finalMessage = enumKey;
+        }
 
         ApiResponse<?> apiResponse = ApiResponse.builder()
-                .status(errorCode.getCode())
-                .message(errorCode.getMessage())
-                .build();
+            .status(errorCode.getCode())
+            .message(finalMessage)
+            .build();
 
         return ResponseEntity.badRequest().body(apiResponse);
     }

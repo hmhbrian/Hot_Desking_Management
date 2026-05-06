@@ -71,9 +71,9 @@ public class SeatController {
                 .build();
     }
 
-    @GetMapping("/search")
+    @PostMapping("/search")
     public ResponseEntity<ApiResponse<List<SeatResponse>>> search(
-            @Valid SearchSeatRequest request) {
+            @RequestBody @Valid SearchSeatRequest request) {
 
         return ResponseEntity.ok(ApiResponse.<List<SeatResponse>>builder()
                 .result(seatService.searchSeats(request))

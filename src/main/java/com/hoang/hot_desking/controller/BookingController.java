@@ -1,15 +1,22 @@
 package com.hoang.hot_desking.controller;
 
 import com.hoang.hot_desking.dto.ApiResponse;
+import com.hoang.hot_desking.dto.PageResponse;
+import com.hoang.hot_desking.dto.booking.BookingDetailResponse;
 import com.hoang.hot_desking.dto.booking.BookingRequest;
 import com.hoang.hot_desking.dto.booking.BookingResponse;
+import com.hoang.hot_desking.dto.booking.CheckInRequest;
 import com.hoang.hot_desking.entity.User;
 import com.hoang.hot_desking.service.BookingService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +34,7 @@ public class BookingController {
      * Mục tiêu: Tạm khóa ghế trên Redis trong 5 phút để nhân viên điền thông tin.
      */
     @PostMapping("/hold/{seatId}")
+    @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<ApiResponse<String>> holdSeat(
             @PathVariable UUID seatId,
             @AuthenticationPrincipal User currentUser) { // Lấy user hiện tại từ Security Context
@@ -40,6 +48,7 @@ public class BookingController {
 
     //Xác nhận đặt chỗ
     @PostMapping("/confirm")
+    @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<ApiResponse<BookingResponse>> confirmBooking(
             @RequestBody @Valid BookingRequest request,
             @AuthenticationPrincipal User currentUser) {
@@ -50,5 +59,64 @@ public class BookingController {
                 .body(ApiResponse.<BookingResponse>builder()
                         .result(response)
                         .build());
+    }
+
+    //Lấy lịch sử booking
+    @GetMapping("/me")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ApiResponse<PageResponse<BookingResponse>> getMyBookings(
+            @AuthenticationPrincipal User currentUser,
+            @ParameterObject Pageable pageable) {
+
+        Page<BookingResponse> bookingPage = bookingService.getMyBookings(currentUser, pageable);
+
+        // Map sang PageResponse
+        PageResponse<BookingResponse> result = PageResponse.<BookingResponse>builder()
+                .data(bookingPage.getContent())
+                .currentPage(bookingPage.getNumber())
+                .totalPages(bookingPage.getTotalPages())
+                .totalElements(bookingPage.getTotalElements())
+                .pageSize(bookingPage.getSize())
+                .build();
+
+        return ApiResponse.<PageResponse<BookingResponse>>builder()
+                .result(result)
+                .build();
+    }
+
+    //Hủy booking
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ApiResponse<Void> cancel(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal User currentUser) {
+        bookingService.cancelBooking(id, currentUser);
+        return ApiResponse.<Void>builder()
+                .message("Hủy đặt chỗ thành công")
+                .build();
+    }
+
+    @GetMapping("/my/{id}")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ApiResponse<BookingDetailResponse> getBookingDetail(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal User currentUser) {
+
+        return ApiResponse.<BookingDetailResponse>builder()
+                .result(bookingService.getBookingDetail(id, currentUser))
+                .build();
+    }
+
+    @PostMapping("/check-in")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ApiResponse<String> checkIn(
+            @RequestBody @Valid CheckInRequest request,
+            @AuthenticationPrincipal User currentUser) {
+
+        bookingService.checkIn(request, currentUser);
+
+        return ApiResponse.<String>builder()
+                .message("Check-in thành công! Chúc bạn có một ngày làm việc hiệu quả.")
+                .build();
     }
 }
