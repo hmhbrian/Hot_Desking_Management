@@ -4,6 +4,7 @@ import com.hoang.hot_desking.entity.Booking;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -41,4 +42,11 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
     Optional<Booking> findByIdAndUserIdWithDetails(UUID id, UUID userId);
 
     Optional<Booking> findByQrToken(String qrToken);
+
+    //Cập nhật trạng thái các booking quá hạn check-in
+    @Modifying
+    @Query("UPDATE Booking b SET b.status = 'EXPIRED'" +
+            "WHERE b.status = 'CONFIRMED'" +
+            "AND b.startTime < :threshold")
+    int releaseNoShowBookings(LocalDateTime threshold);
 }
