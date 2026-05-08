@@ -119,4 +119,22 @@ public class BookingController {
                 .message("Check-in thành công! Chúc bạn có một ngày làm việc hiệu quả.")
                 .build();
     }
+
+    /**
+     * API thực hiện Check-out sớm cho nhân viên.
+     * @param id ID của bản ghi Booking
+     * @param currentUser Người dùng đang đăng nhập (lấy từ Security Context)
+     */
+    @PostMapping("/{id}/check-out")
+    @PreAuthorize("hasAnyRole('EMPLOYEE')") // Nhân viên tự check-out
+    public ApiResponse<Void> checkOut(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal User currentUser) {
+
+        bookingService.checkOut(id, currentUser);
+
+        return ApiResponse.<Void>builder()
+                .message("Check-out thành công. Cảm ơn bạn đã giải phóng chỗ ngồi sớm!")
+                .build();
+    }
 }
