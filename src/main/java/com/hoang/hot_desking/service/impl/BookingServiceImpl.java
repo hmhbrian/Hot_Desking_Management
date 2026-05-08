@@ -200,4 +200,31 @@ public class BookingServiceImpl implements BookingService {
 
         log.info("User {} đã check-in thành công tại ghế {}", currentUser.getFullName(), booking.getSeat().getSeatNumber());
     }
+
+    @Override
+    @Transactional
+    public void checkOut(UUID bookingId, User currentUser) {
+        LocalDateTime now = LocalDateTime.now();
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
+
+        // Chốt chặn bảo mật và trạng thái
+        if (!booking.getUser().getId().equals(currentUser.getId())) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        if (booking.getStatus() != BookingStatus.CHECKED_IN) {
+            throw new AppException(ErrorCode.INVALID_BOOKING_STATUS);
+        }
+
+        // THỰC HIỆN CHECK-OUT
+        booking.setStatus(BookingStatus.COMPLETED);
+        booking.setCheckOutAt(now);
+
+        bookingRepository.save(booking);
+
+        log.info("Check-out thành công. Dự kiến: {}-{}, Thực tế: {}-{}",
+                booking.getStartTime(), booking.getEndTime(),
+                booking.getCheckInAt(), booking.getCheckOutAt());
+    }
 }

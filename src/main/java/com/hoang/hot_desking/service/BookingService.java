@@ -17,4 +17,5 @@ public interface BookingService {
     void cancelBooking(UUID bookingId, User currentUser);
     BookingDetailResponse getBookingDetail(UUID bookingId, User currentUser);
     void checkIn(CheckInRequest request, User currentUser);
+    void checkOut(UUID bookingId, User currentUser);
 }

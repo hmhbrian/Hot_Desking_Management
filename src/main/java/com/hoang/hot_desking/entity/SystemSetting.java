@@ -13,4 +13,5 @@ public class SystemSetting {
 
     @Column(nullable = false)
     private String value;
+    private String description;
 }
