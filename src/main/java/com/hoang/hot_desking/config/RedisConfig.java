@@ -1,5 +1,6 @@
 package com.hoang.hot_desking.config;
 
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -7,6 +8,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 @Configuration
+@EnableCaching
 public class RedisConfig {
 
     //Cấu hình RedisConnectionFactory, lấy thông tin từ file application.yml
