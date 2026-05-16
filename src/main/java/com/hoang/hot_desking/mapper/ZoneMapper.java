@@ -17,6 +17,7 @@ public interface ZoneMapper {
 
     @Mapping(source = "location.id", target = "locationId")
     @Mapping(source = "location.name", target = "locationName")
+    @Mapping(target = "totalSeats", expression = "java(zone.getSeats() != null ? zone.getSeats().size() : 0)")
     ZoneResponse toZoneResponse(Zone zone);
 
     @Mapping(target = "location", ignore = true)

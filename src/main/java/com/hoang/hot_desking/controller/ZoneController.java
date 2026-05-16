@@ -29,10 +29,10 @@ public class ZoneController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ApiResponse<List<ZoneResponse>> getAll() {
+    public ApiResponse<List<ZoneResponse>> getAll(@RequestParam(required = false) Long locationId) {
         return ApiResponse.<List<ZoneResponse>>builder()
                 .status(1000)
-                .result(zoneService.getAllZones())
+                .result(zoneService.getAllZones(locationId))
                 .build();
     }
 

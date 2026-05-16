@@ -5,6 +5,7 @@ import com.hoang.hot_desking.entity.Seat;
 import io.lettuce.core.dynamic.annotation.Param;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 @Repository
-public interface SeatRepository extends JpaRepository<Seat, UUID> {
+public interface SeatRepository extends JpaRepository<Seat, UUID>, JpaSpecificationExecutor<Seat> {
     List<Seat> findByZoneId(long zoneId);
 
     @Lock(LockModeType.OPTIMISTIC_FORCE_INCREMENT)
@@ -40,7 +41,7 @@ public interface SeatRepository extends JpaRepository<Seat, UUID> {
     List<Seat> searchAvailableSeats(
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime,
-            @Param("zoneId") Integer zoneId,
+            @Param("zoneId") Long zoneId,
             @Param("minMonitors") Integer minMonitors,
             @Param("seatType") String seatType
     );

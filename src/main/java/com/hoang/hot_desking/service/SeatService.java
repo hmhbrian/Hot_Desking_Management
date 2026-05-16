@@ -1,6 +1,8 @@
 package com.hoang.hot_desking.service;
 
 import com.hoang.hot_desking.dto.seat.*;
+import org.springframework.data.domain.Page;
+
 import java.util.*;
 
 public interface SeatService {
@@ -10,4 +12,5 @@ public interface SeatService {
     SeatResponse updateSeat(UUID id, SeatRequest request);
     void deleteSeat(UUID id);
     List<SeatResponse> searchSeats(SearchSeatRequest request);
+    Page<SeatResponse> getAllSeatsForAdmin(SeatFilterRequest request);
 }

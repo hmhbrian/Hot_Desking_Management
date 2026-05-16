@@ -9,4 +9,6 @@ public class LocationResponse {
     private Long id;
     private String name;
     private String address;
+    private long totalZones;
+    private long totalSeats;
 }

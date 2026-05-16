@@ -8,10 +8,12 @@ import org.mapstruct.MappingTarget;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", imports = {java.util.stream.Collectors.class, java.util.stream.Stream.class})
 public interface LocationMapper {
     Location toLocation(LocationRequest request);
 
+    @org.mapstruct.Mapping(target = "totalZones", expression = "java(location.getZones() != null ? location.getZones().size() : 0)")
+    @org.mapstruct.Mapping(target = "totalSeats", expression = "java(location.getZones() != null ? location.getZones().stream().filter(z -> z.getSeats() != null).flatMap(z -> z.getSeats().stream()).count() : 0)")
     LocationResponse toLocationResponse(Location location);
 
     void updateLocation(@MappingTarget Location location, LocationRequest request);

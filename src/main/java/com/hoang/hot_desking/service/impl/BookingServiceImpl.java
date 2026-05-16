@@ -16,6 +16,7 @@ import com.hoang.hot_desking.mapper.BookingMapper;
 import com.hoang.hot_desking.repository.BookingRepository;
 import com.hoang.hot_desking.repository.SeatRepository;
 import com.hoang.hot_desking.service.BookingService;
+import com.hoang.hot_desking.service.SettingService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,7 @@ public class BookingServiceImpl implements BookingService {
     private final SeatLockManager lockManager;
     private final BookingRepository bookingRepository;
     private final BookingMapper bookingMapper; //Inject mapper
+    private final SettingService settingService;
     /**
      * Nhân viên nhấn vào ghế để bắt đầu điền thông tin.
      * API này sẽ được gọi trước khi API đặt chỗ chính thức
@@ -57,6 +59,7 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
+    //Confirm booking
     @Override
     @Transactional
     public BookingResponse confirmBooking(BookingRequest request, User currentUser) {
@@ -122,12 +125,14 @@ public class BookingServiceImpl implements BookingService {
         return bookingMapper.toBookingResponse(booking);
     }
 
+    //Get booking history list
     @Override
     public Page<BookingResponse> getMyBookings(User currentUser, Pageable pageable) {
         return bookingRepository.findByUserIdOrderByStartTimeDesc(currentUser.getId(), pageable)
                 .map(bookingMapper::toBookingResponse);
     }
 
+    //Cancel booking
     @Override
     @Transactional
     public void cancelBooking(UUID bookingId, User currentUser) {
@@ -151,6 +156,7 @@ public class BookingServiceImpl implements BookingService {
         log.info("User {} đã hủy thành công booking {}", currentUser.getId(), bookingId);
     }
 
+    //Get detail bookking
     @Override
     public BookingDetailResponse getBookingDetail(UUID bookingId, User currentUser) {
         // Vừa check tồn tại, vừa check chủ sở hữu
@@ -164,6 +170,8 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public void checkIn(CheckInRequest request, User currentUser) {
         LocalDateTime now = LocalDateTime.now();
+        int earlyMargin = settingService.getInteger("CHECKIN_EARLY_MARGIN", 15);
+        int lateMargin = settingService.getInteger("CHECKIN_LATE_MARGIN", 30);
 
         //Tìm booking bằng qrToken
         Booking booking = bookingRepository.findByQrToken(request.getQrToken())
@@ -186,10 +194,10 @@ public class BookingServiceImpl implements BookingService {
 
         //4: Kiểm tra thời gian
         // Cho phép check-in trước 15p và sau tối đa 30p so với giờ bắt đầu
-        if (now.isBefore(booking.getStartTime().minusMinutes(15))) {
+        if (now.isBefore(booking.getStartTime().minusMinutes(earlyMargin))) {
             throw new AppException(ErrorCode.CHECKIN_TOO_EARLY);
         }
-        if (now.isAfter(booking.getStartTime().plusMinutes(30))) {
+        if (now.isAfter(booking.getStartTime().plusMinutes(lateMargin))) {
             throw new AppException(ErrorCode.CHECKIN_TIMEOUT);
         }
 

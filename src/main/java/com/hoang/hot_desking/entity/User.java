@@ -26,7 +26,7 @@ public class User extends AbstractMappedEntity{
     private String pictureUrl;
 
     @Enumerated(EnumType.STRING)
-    private UserRole role; // ADMIN, EMPLOYEE
+    private UserRole role; // ADMIN, EMPLOYEE,MANAGER
 
     private boolean enabled = true;
 

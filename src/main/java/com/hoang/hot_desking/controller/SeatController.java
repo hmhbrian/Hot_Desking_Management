@@ -1,14 +1,14 @@
 package com.hoang.hot_desking.controller;
 
 import com.hoang.hot_desking.dto.ApiResponse;
-import com.hoang.hot_desking.dto.seat.SearchSeatRequest;
-import com.hoang.hot_desking.dto.seat.SeatBulkRequest;
-import com.hoang.hot_desking.dto.seat.SeatRequest;
-import com.hoang.hot_desking.dto.seat.SeatResponse;
+import com.hoang.hot_desking.dto.PageResponse;
+import com.hoang.hot_desking.dto.seat.*;
+import com.hoang.hot_desking.entity.Seat;
 import com.hoang.hot_desking.service.SeatService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -68,6 +68,26 @@ public class SeatController {
         return ApiResponse.<Void>builder()
                 .status(1000)
                 .message("Xóa chỗ ngồi thành công")
+                .build();
+    }
+
+    //Hiển thị toàn bộ seat có điều kiện lọc cho Admin
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<PageResponse<SeatResponse>> getAllSeats(@ModelAttribute SeatFilterRequest request) {
+        Page<SeatResponse> seatPage = seatService.getAllSeatsForAdmin(request);
+
+        // Map sang PageResponse
+        PageResponse<SeatResponse> result = PageResponse.<SeatResponse>builder()
+                .data(seatPage.getContent())
+                .currentPage(seatPage.getNumber())
+                .totalPages(seatPage.getTotalPages())
+                .totalElements(seatPage.getTotalElements())
+                .pageSize(seatPage.getSize())
+                .build();
+
+        return ApiResponse.<PageResponse<SeatResponse>>builder()
+                .result(result)
                 .build();
     }
 
