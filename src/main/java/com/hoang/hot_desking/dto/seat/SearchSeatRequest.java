@@ -16,7 +16,7 @@ public class SearchSeatRequest {
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
     private LocalDateTime endTime;
 
-    private Integer zoneId;
+    private Long zoneId;
 
     // Các tiêu chí lọc features (ví dụ cụ thể)
     private Integer minMonitors;

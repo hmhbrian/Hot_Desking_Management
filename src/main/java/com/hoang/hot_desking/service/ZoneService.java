@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface ZoneService {
     ZoneResponse createZone(ZoneRequest request);
-    List<ZoneResponse> getAllZones();
+    List<ZoneResponse> getAllZones(Long locationId);
     ZoneResponse getById(Long id);
     ZoneResponse updateZone(Long id, ZoneRequest request);
     void deleteZone(Long id);

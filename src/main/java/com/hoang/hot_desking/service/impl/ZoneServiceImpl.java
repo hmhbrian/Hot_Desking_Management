@@ -42,8 +42,13 @@ public class ZoneServiceImpl implements ZoneService {
     }
 
     @Override
-    public List<ZoneResponse> getAllZones() {
-        List<Zone> zones = zoneRepository.findAll();
+    public List<ZoneResponse> getAllZones(Long locationId) {
+        List<Zone> zones;
+        if (locationId != null) {
+            zones = zoneRepository.findByLocationId(locationId);
+        } else {
+            zones = zoneRepository.findAll();
+        }
         return zoneMapper.toZoneResponseList(zones);
     }
 

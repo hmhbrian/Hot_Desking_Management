@@ -11,4 +11,5 @@ public class ZoneResponse {
     private String description;
     private Long locationId;
     private String locationName;
+    private long totalSeats;
 }

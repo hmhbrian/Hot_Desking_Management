@@ -1,9 +1,6 @@
 package com.hoang.hot_desking.service.impl;
 
-import com.hoang.hot_desking.dto.seat.SearchSeatRequest;
-import com.hoang.hot_desking.dto.seat.SeatBulkRequest;
-import com.hoang.hot_desking.dto.seat.SeatRequest;
-import com.hoang.hot_desking.dto.seat.SeatResponse;
+import com.hoang.hot_desking.dto.seat.*;
 import com.hoang.hot_desking.entity.Seat;
 import com.hoang.hot_desking.entity.Zone;
 import com.hoang.hot_desking.entity.enums.SeatStatus;
@@ -12,10 +9,15 @@ import com.hoang.hot_desking.exception.ErrorCode;
 import com.hoang.hot_desking.mapper.SeatMapper;
 import com.hoang.hot_desking.repository.SeatRepository;
 import com.hoang.hot_desking.repository.ZoneRepository;
+import com.hoang.hot_desking.repository.specification.SeatSpecification;
 import com.hoang.hot_desking.service.SeatService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -117,5 +119,20 @@ public class SeatServiceImpl implements SeatService {
         return availableSeats.stream()
                 .map(seatMapper::toSeatResponse)
                 .toList();
+    }
+
+    @Override
+    public Page<SeatResponse> getAllSeatsForAdmin(SeatFilterRequest request) {
+        Sort sort = request.getSortDir().equalsIgnoreCase("asc")
+                ? Sort.by(request.getSortBy()).ascending()
+                : Sort.by(request.getSortBy()).descending();
+
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
+
+        // Gọi repository với Specification
+        Page<Seat> seatPage = seatRepository.findAll(SeatSpecification.filterSeats(request), pageable);
+
+        // Map sang DTO để trả về (Tránh trả về Entity trực tiếp)
+        return seatPage.map(seatMapper::toSeatResponse);
     }
 }
