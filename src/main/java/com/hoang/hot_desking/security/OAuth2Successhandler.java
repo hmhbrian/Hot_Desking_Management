@@ -14,6 +14,9 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationFa
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
+import jakarta.servlet.http.Cookie;
+import org.springframework.web.util.WebUtils;
+
 import java.io.IOException;
 
 @Component
@@ -38,8 +41,21 @@ public class OAuth2Successhandler extends SimpleUrlAuthenticationSuccessHandler 
         String token = tokenProvider.generateToken(user);
         log.info("Đăng nhập thành công, đang tạo token cho email: {}", email);
 
-        // Trả Token về cho Client
-        String targetUrl = "http://localhost:8080/swagger-ui/index.html?token=" + token;
+        // --- Logic Chuyển hướng linh hoạt ---
+        // Mặc định về Swagger để test API
+        String targetUrl = "http://localhost:8080/swagger-ui/index.html"; 
+
+        // Kiểm tra xem Frontend có gửi yêu cầu chuyển hướng cụ thể (qua Cookie) không
+        Cookie redirectCookie = WebUtils.getCookie(request, "redirect_uri");
+        
+        if (redirectCookie != null) {
+            targetUrl = redirectCookie.getValue() + "?token=" + token;
+            log.info("Phát hiện cookie redirect_uri, chuyển hướng về: {}", redirectCookie.getValue());
+        } else {
+            targetUrl += "?token=" + token;
+            log.info("Không có cookie redirect_uri, chuyển hướng mặc định về Swagger");
+        }
+
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
 
     }
