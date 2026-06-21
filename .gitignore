@@ -1,0 +1,7 @@
+# Ignore local database volume
+hot-desking/postgres-data/
+postgres-data/
+
+# OS generated files
+.DS_Store
+Thumbs.db
