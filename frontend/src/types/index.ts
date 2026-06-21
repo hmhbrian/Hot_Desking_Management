@@ -83,6 +83,19 @@ export interface Booking {
   };
 }
 
+export interface AdminBookingResponse {
+  id: string; // UUID
+  userName: string;
+  userEmail: string;
+  seatNumber: string;
+  zoneName: string;
+  locationName: string;
+  startTime: string; // ISO LocalDateTime
+  endTime: string; // ISO LocalDateTime
+  status: BookingStatus;
+  createdAt?: string; // ISO LocalDateTime
+}
+
 // --- API Response Wrappers ---
 
 /**
@@ -118,5 +131,4 @@ export interface SearchSeatRequest {
   zoneId?: number;
   startTime: string;
   endTime: string;
-  seatStatus?: SeatStatus;
 }

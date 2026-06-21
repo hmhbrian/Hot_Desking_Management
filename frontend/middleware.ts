@@ -13,49 +13,57 @@ export function middleware(request: NextRequest) {
   const userRole = request.cookies.get("user_role")?.value;
 
   // 2. Định nghĩa các nhóm route
+  const isEmployeeRoute =
+    pathname.startsWith("/my-bookings") ||
+    pathname.startsWith("/book-seat") ||
+    pathname.startsWith("/profile") ||
+    pathname.startsWith("/guide");
+
   const isDashboardRoute = pathname.startsWith("/dashboard");
+  const isAdminRoute = pathname.startsWith("/admin");
   const isLoginRoute = pathname === "/login";
+  const isRootRoute = pathname === "/";
 
-  // 3. LOGIC BẢO VỆ:
+  // 3. LOGIC REDIRECT GỐC: "/" → "/my-bookings" hoặc "/login"
+  if (isRootRoute) {
+    if (token) {
+      // Đã đăng nhập → vào trang chủ của Employee
+      return NextResponse.redirect(new URL("/my-bookings", request.url));
+    } else {
+      // Chưa đăng nhập → vào trang login
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+  }
 
-  // --- Trường hợp chưa đăng nhập ---
-  if (isDashboardRoute && !token) {
+  // 4. Nếu đã đăng nhập mà còn vào /login → đá về /my-bookings
+  if (isLoginRoute && token) {
+    return NextResponse.redirect(new URL("/my-bookings", request.url));
+  }
+
+  // 5. Bảo vệ các route yêu cầu đăng nhập
+  if ((isEmployeeRoute || isDashboardRoute || isAdminRoute) && !token) {
     const loginUrl = new URL("/login", request.url);
-    // Lưu lại URL đang định vào để sau khi login có thể quay lại (tùy chọn)
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Nếu đã đăng nhập mà còn vào /login -> đá về /dashboard
-  if (isLoginRoute && token) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  // 6. Bảo vệ Admin route: chỉ ADMIN mới được vào
+  if (isAdminRoute && token) {
+    if (userRole !== "ADMIN") {
+      return NextResponse.redirect(new URL("/my-bookings", request.url));
+    }
   }
 
-  // --- Trường hợp phân quyền theo Role (RBAC) ---
+  // 7. Legacy /dashboard route: Redirect về route mới nếu đã đăng nhập
   if (isDashboardRoute && token) {
-    // ADMIN và MANAGER có toàn quyền -> cho qua hết
+    // ADMIN và MANAGER có toàn quyền → cho qua (legacy support)
     if (userRole === "ADMIN" || userRole === "MANAGER") {
       return NextResponse.next();
     }
 
-    // EMPLOYEE: Chỉ được vào trang đặt chỗ (/dashboard/booking)
+    // EMPLOYEE: chuyển sang route mới
     if (userRole === "EMPLOYEE") {
-      // Danh sách các route mà EMPLOYEE KHÔNG ĐƯỢC VÀO
-      const adminOnlyRoutes = [
-        "/dashboard/users",
-        "/dashboard/seats",
-        "/dashboard/settings",
-        "/dashboard/reports",
-        "/dashboard/locations",
-        "/dashboard/zones"
-      ];
-
-      const isAccessingAdminRoute = adminOnlyRoutes.some(route => pathname.startsWith(route));
-
-      if (isAccessingAdminRoute) {
-        // Nếu cố tình vào trang quản trị -> đá về trang booking của họ
-        return NextResponse.redirect(new URL("/dashboard/booking", request.url));
-      }
+      return NextResponse.redirect(new URL("/my-bookings", request.url));
     }
   }
 
@@ -64,11 +72,16 @@ export function middleware(request: NextRequest) {
 
 /**
  * Cấu hình các route mà middleware sẽ chạy qua.
- * Chỉ chạy cho các trang dashboard và login để tối ưu hiệu năng.
  */
 export const config = {
   matcher: [
-    "/dashboard/:path*",
+    "/",
     "/login",
+    "/dashboard/:path*",
+    "/admin/:path*",
+    "/my-bookings/:path*",
+    "/book-seat/:path*",
+    "/profile/:path*",
+    "/guide/:path*",
   ],
 };

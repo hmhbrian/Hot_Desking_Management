@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Mail } from "lucide-react";
 import Link from "next/link";
@@ -88,16 +88,13 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <Button 
-              variant="link" 
-              className="text-slate-400 hover:text-white transition-colors"
-              asChild
+            <Link 
+              href="mailto:support@hotdeskpro.com" 
+              className={buttonVariants({ variant: "link", className: "text-slate-400 hover:text-white transition-colors gap-2" })}
             >
-              <Link href="mailto:support@hotdeskpro.com" className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                Liên hệ hỗ trợ kỹ thuật
-              </Link>
-            </Button>
+              <Mail className="h-4 w-4" />
+              Liên hệ hỗ trợ kỹ thuật
+            </Link>
           </CardContent>
         </Card>
 
