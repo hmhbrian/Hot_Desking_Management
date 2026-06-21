@@ -1,6 +1,7 @@
 package com.hoang.hot_desking.service.impl;
 
 import com.hoang.hot_desking.component.SeatLockManager;
+import com.hoang.hot_desking.dto.booking.AdminBookingResponse;
 import com.hoang.hot_desking.dto.booking.BookingDetailResponse;
 import com.hoang.hot_desking.dto.booking.BookingRequest;
 import com.hoang.hot_desking.dto.booking.BookingResponse;
@@ -15,8 +16,10 @@ import com.hoang.hot_desking.exception.ErrorCode;
 import com.hoang.hot_desking.mapper.BookingMapper;
 import com.hoang.hot_desking.repository.BookingRepository;
 import com.hoang.hot_desking.repository.SeatRepository;
+import com.hoang.hot_desking.repository.specification.BookingSpecification;
 import com.hoang.hot_desking.service.BookingService;
 import com.hoang.hot_desking.service.SettingService;
+import org.springframework.data.jpa.domain.Specification;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +60,18 @@ public class BookingServiceImpl implements BookingService {
         if (!held){
             throw  new AppException(ErrorCode.BOOKING_LOCKED);
         }
+    }
+
+    @Override
+    public void releaseHold(UUID seatId, UUID userId) {
+        // Có thể kiểm tra thêm người release có phải người hold không,
+        // nhưng tạm thời chỉ release khóa
+        if (lockManager.isLockedByOther(seatId, userId)) {
+            // Không được giải phóng khóa của người khác
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        lockManager.releaseLock(seatId);
+        log.info("Đã giải phóng ghế {} khỏi trạng thái hold", seatId);
     }
 
     //Confirm booking
@@ -234,5 +249,46 @@ public class BookingServiceImpl implements BookingService {
         log.info("Check-out thành công. Dự kiến: {}-{}, Thực tế: {}-{}",
                 booking.getStartTime(), booking.getEndTime(),
                 booking.getCheckInAt(), booking.getCheckOutAt());
+    }
+
+    @Override
+    public Page<AdminBookingResponse> getAllBookingsForAdmin(String status, LocalDateTime fromDate, LocalDateTime toDate, Pageable pageable) {
+        Specification<Booking> spec = Specification.where(null);
+
+        if (status != null && !status.isEmpty()) {
+            try {
+                BookingStatus bookingStatus = BookingStatus.valueOf(status);
+                spec = spec.and(BookingSpecification.hasStatus(bookingStatus));
+            } catch (IllegalArgumentException e) {
+                // Ignore invalid status
+            }
+        }
+
+        if (fromDate != null) {
+            spec = spec.and(BookingSpecification.startTimeAfter(fromDate));
+        }
+
+        if (toDate != null) {
+            spec = spec.and(BookingSpecification.startTimeBefore(toDate));
+        }
+
+        return bookingRepository.findAll(spec, pageable)
+                .map(bookingMapper::toAdminBookingResponse);
+    }
+
+    @Override
+    @Transactional
+    public void forceCancelBooking(UUID bookingId, User adminUser) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(ErrorCode.BOOKING_NOT_FOUND));
+
+        if (booking.getStatus() != BookingStatus.CONFIRMED && booking.getStatus() != BookingStatus.NO_SHOW) {
+            throw new AppException(ErrorCode.INVALID_BOOKING_STATUS);
+        }
+
+        booking.setStatus(BookingStatus.CANCELLED);
+        bookingRepository.save(booking);
+
+        log.info("Admin {} đã hủy bắt buộc booking {}", adminUser.getId(), bookingId);
     }
 }

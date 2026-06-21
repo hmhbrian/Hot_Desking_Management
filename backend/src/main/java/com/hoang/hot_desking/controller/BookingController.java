@@ -2,6 +2,7 @@ package com.hoang.hot_desking.controller;
 
 import com.hoang.hot_desking.dto.ApiResponse;
 import com.hoang.hot_desking.dto.PageResponse;
+import com.hoang.hot_desking.dto.booking.AdminBookingResponse;
 import com.hoang.hot_desking.dto.booking.BookingDetailResponse;
 import com.hoang.hot_desking.dto.booking.BookingRequest;
 import com.hoang.hot_desking.dto.booking.BookingResponse;
@@ -19,7 +20,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RestController
@@ -43,6 +46,19 @@ public class BookingController {
 
         return ResponseEntity.ok(ApiResponse.<String>builder()
                 .result("Ghế đã được giữ thành công. Bạn có 5 phút để hoàn tất thông tin.")
+                .build());
+    }
+
+    @DeleteMapping("/hold/{seatId}")
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    public ResponseEntity<ApiResponse<String>> releaseHold(
+            @PathVariable UUID seatId,
+            @AuthenticationPrincipal User currentUser) {
+
+        bookingService.releaseHold(seatId, currentUser.getId());
+
+        return ResponseEntity.ok(ApiResponse.<String>builder()
+                .message("Đã giải phóng ghế.")
                 .build());
     }
 
@@ -96,6 +112,7 @@ public class BookingController {
                 .build();
     }
 
+    //get booking detail
     @GetMapping("/my/{id}")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ApiResponse<BookingDetailResponse> getBookingDetail(
@@ -107,6 +124,11 @@ public class BookingController {
                 .build();
     }
 
+    /**
+     * API thực hiện Check-out sớm cho nhân viên.
+     * @param request (seatId, qrToken)
+     * @param currentUser Người dùng đang đăng nhập (lấy từ Security Context)
+     */
     @PostMapping("/check-in")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ApiResponse<String> checkIn(
@@ -135,6 +157,46 @@ public class BookingController {
 
         return ApiResponse.<Void>builder()
                 .message("Check-out thành công. Cảm ơn bạn đã giải phóng chỗ ngồi sớm!")
+                .build();
+    }
+
+    // ==========================================
+    // ADMIN ENDPOINTS
+    // ==========================================
+
+    @GetMapping("/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<PageResponse<AdminBookingResponse>> getAllBookingsForAdmin(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime toDate,
+            @ParameterObject Pageable pageable) {
+
+        Page<AdminBookingResponse> page = bookingService.getAllBookingsForAdmin(status, fromDate, toDate, pageable);
+        
+        PageResponse<AdminBookingResponse> result = PageResponse.<AdminBookingResponse>builder()
+                .data(page.getContent())
+                .currentPage(page.getNumber())
+                .totalPages(page.getTotalPages())
+                .totalElements(page.getTotalElements())
+                .pageSize(page.getSize())
+                .build();
+
+        return ApiResponse.<PageResponse<AdminBookingResponse>>builder()
+                .result(result)
+                .build();
+    }
+
+    @DeleteMapping("/admin/{id}/cancel")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ApiResponse<Void> forceCancel(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal User currentUser) {
+        
+        bookingService.forceCancelBooking(id, currentUser);
+        
+        return ApiResponse.<Void>builder()
+                .message("Hủy bắt buộc đặt chỗ thành công")
                 .build();
     }
 }
