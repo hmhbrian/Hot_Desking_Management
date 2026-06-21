@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import { ReactQueryProvider } from "@/components/shared/react-query-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const inter = Inter({
   subsets: ["latin", "vietnamese"],
@@ -32,6 +33,7 @@ export default function RootLayout({
     <html lang="vi" className={`${inter.variable} ${beVietnamPro.variable}`} suppressHydrationWarning>
       <body className="font-be-vietnam-pro antialiased bg-background text-foreground">
         <ReactQueryProvider>{children}</ReactQueryProvider>
+        <Toaster />
       </body>
     </html>
   );
