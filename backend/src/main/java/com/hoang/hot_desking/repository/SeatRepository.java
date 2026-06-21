@@ -23,8 +23,10 @@ public interface SeatRepository extends JpaRepository<Seat, UUID>, JpaSpecificat
 
     @Query(value = """
         SELECT s.* FROM seats s
+        JOIN zones z ON s.zone_id = z.id
         WHERE s.is_active = true
         AND s.status = 'AVAILABLE'
+        AND (:locationId IS NULL OR z.location_id = :locationId)
         AND (:zoneId IS NULL OR s.zone_id = :zoneId)
         -- Lọc JSONB: Tìm ghế có số màn hình >= minMonitors (nếu có)
         AND (:minMonitors IS NULL OR (s.features ->> 'monitor')::int >= :minMonitors)
@@ -41,6 +43,7 @@ public interface SeatRepository extends JpaRepository<Seat, UUID>, JpaSpecificat
     List<Seat> searchAvailableSeats(
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime,
+            @Param("locationId") Long locationId,
             @Param("zoneId") Long zoneId,
             @Param("minMonitors") Integer minMonitors,
             @Param("seatType") String seatType

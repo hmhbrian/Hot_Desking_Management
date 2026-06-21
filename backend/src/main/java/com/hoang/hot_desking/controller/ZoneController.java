@@ -28,7 +28,6 @@ public class ZoneController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ApiResponse<List<ZoneResponse>> getAll(@RequestParam(required = false) Long locationId) {
         return ApiResponse.<List<ZoneResponse>>builder()
                 .status(1000)

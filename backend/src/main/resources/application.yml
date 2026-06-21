@@ -28,5 +28,12 @@ spring:
             scope:
               - email
               - profile
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      adjust-dates-to-context-time-zone: false
+
 server:
   port: 8080

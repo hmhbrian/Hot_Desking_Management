@@ -30,7 +30,8 @@ function AuthCallbackContent() {
           if (user.role === "ADMIN") {
             router.push("/admin");
           } else {
-            router.push("/dashboard");
+            // EMPLOYEE & MANAGER → trang chủ của Employee portal
+            router.push("/my-bookings");
           }
         } catch (error) {
           console.error("Lỗi khi xử lý token:", error);

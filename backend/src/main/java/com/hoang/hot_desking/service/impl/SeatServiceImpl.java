@@ -111,6 +111,7 @@ public class SeatServiceImpl implements SeatService {
         List<Seat> availableSeats = seatRepository.searchAvailableSeats(
                 request.getStartTime(),
                 request.getEndTime(),
+                request.getLocationId(),
                 request.getZoneId(),
                 request.getMinMonitors(),
                 request.getSeatType()
